@@ -1,4 +1,9 @@
-name: Android-APK
+- name: Ensure version token exists
+  run: |
+    if ! grep -qE '^[[:space:]]*version[[:space:]=]' buildozer.spec; then
+      sed -i '/^\[app\]/a version = 0.1.0' buildozer.spec
+    fi
+
 on:
   push:
     branches: [main]      # build every commit
