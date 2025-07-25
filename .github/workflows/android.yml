@@ -1,29 +1,33 @@
-- name: Ensure version token exists
-  run: |
-    if ! grep -qE '^[[:space:]]*version[[:space:]=]' buildozer.spec; then
-      sed -i '/^\[app\]/a version = 0.1.0' buildozer.spec
-    fi
+name: Android-APK
 
 on:
   push:
-    branches: [main]      # build every commit
-  workflow_dispatch:      # allow manual trigger
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      # Build with official Buildozer Docker image
+      # Guarantee the version token exists (safety net)
+      - name: Ensure buildozer.spec has version
+        run: |
+          if ! grep -qE '^[[:space:]]*version[[:space:]=]' buildozer.spec; then
+            sed -i '/^\[app\]/a version = 0.1.0' buildozer.spec
+          fi
+
+      # Build APK with Buildozer inside Docker
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1   # marketplace action[9]
+        uses: ArtemSBulgakov/buildozer-action@v1
         with:
-          workdir: .               # root of repo
+          workdir: .
           command: buildozer -v android debug
           buildozer_version: stable
 
-      # Upload APK artefact
+      # Upload generated APK
       - uses: actions/upload-artifact@v4
         with:
           name: FaceApp-APK
